@@ -1,4 +1,4 @@
-![GitHub release (latest by date)](https://img.shields.io/github/v/release/moifort/swiftUI-slide-over-card)
+<!--![GitHub release (latest by date)](https://img.shields.io/github/v/release/moifort/swiftUI-slide-over-card)-->
 # Slide Over Card for SwiftUI
 
 ![sample](./static/sample.gif)
@@ -8,7 +8,26 @@
 Swift Package Manager is integrated within Xcode 11:
 
 1. File → Swift Packages → Add Package Dependency...
-2. Paste the repository URL: https://github.com/moifort/swiftUI-slide-over-card.git
+2. Paste the repository URL: https://github.com/loyihsu/swiftUI-slide-over-card.git
+3. To use the customised implementation, use the main branch.
+
+## Default Usage
+
+This customisable version uses an `ObservedObject` of `CardPositionHandler` to handle the card position. You can set it up like this:
+
+```swift
+import SwiftUI
+import SlideOverCard
+
+struct ContentView: View {
+    @ObservedObject var position = CardPositionHandler()
+    var body: some View {
+        SlideOverCard {
+            Text("hello world")
+        }.environmentObject(position)
+    }
+}
+```
 
 ## Set Slide position
 
@@ -17,13 +36,32 @@ Swift Package Manager is integrated within Xcode 11:
 By default the slide is in `.middle` position. If you want to change it, set like:
 
 ```swift
-SlideOverCard(.bottom) { // or .middle, .top
-    VStack {
-        Text("Slide Over Card").font(.title)
-        Spacer()
+struct ContentView: View {
+    @ObservedObject var position = CardPositionHandler(currentPosition: .bottom)
+    var body: some View {
+        SlideOverCard {
+            Text("hello world")
+        }.environmentObject(position)
     }
 }
 ```
+
+The very point of the customisable implementation is that you can modify the height of each position by setting it up in the CardPositionHandler initialiser like this:
+
+```swift
+struct ContentView: View {
+    @ObservedObject var position = CardPositionHandler(currentPosition: .middle, bottom: UIScreen.main.bounds.height - 100, middle: UIScreen.main.bounds.height / 4, top: 100)
+    var body: some View {
+        SlideOverCard {
+            Text("hello world")
+        }.environmentObject(position)
+    }
+}
+```
+
+
+
+
 
 ## Set Background Style
 
@@ -32,10 +70,12 @@ SlideOverCard(.bottom) { // or .middle, .top
 By default background is 'solid'. If you want to change it for blur or clear, set like:
 
 ```swift
-SlideOverCard(backgroundStyle: .blur) { // or .clear or .solid
-    VStack {
-        Text("Slide Over Card").font(.title)
-        Spacer()
+struct ContentView: View {
+    @ObservedObject var position = CardPositionHandler()
+    var body: some View {
+        SlideOverCard(backgroundStyle: .constant(.blur)) {
+            Text("hello world")
+        }.environmentObject(position)
     }
 }
 ```
@@ -48,14 +88,14 @@ import MapKit
 import SlideOverCard // Add import
 
 struct ContentView : View {
-    @State private var position = CardPosition.top
+    @ObservedObject private var position = CardPositionHandler(currentPosition: .top)
     @State private var background = BackgroundStyle.blur
     
     var body: some View {
         ZStack(alignment: Alignment.top) {
             MapView()
             VStack {
-                Picker(selection: self.$position, label: Text("Position")) {
+                Picker(selection: $position.currentPosition, label: Text("Position")) {
                     Text("Bottom").tag(CardPosition.bottom)
                     Text("Middle").tag(CardPosition.middle)
                     Text("Top").tag(CardPosition.top)
@@ -66,12 +106,12 @@ struct ContentView : View {
                     Text("Solid").tag(BackgroundStyle.solid)
                 }.pickerStyle(SegmentedPickerStyle())
             }.padding().padding(.top, 25)
-            SlideOverCard($position, backgroundStyle: $background) {
+            SlideOverCard(backgroundStyle: $background) {
                 VStack {
                     Text("Slide Over Card").font(.title)
                     Spacer()
                 }
-            }
+            }.environmentObject(position)
         }
         .edgesIgnoringSafeArea(.vertical)
     }
