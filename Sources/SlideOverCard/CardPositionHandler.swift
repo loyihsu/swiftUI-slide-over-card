@@ -18,6 +18,7 @@ public class CardPositionHandler: ObservableObject {
     private var top: CGFloat
     
     public init (currentPosition: CardPosition = .middle, bottom: CGFloat = UIScreen.main.bounds.height - 80, middle: CGFloat = UIScreen.main.bounds.height/1.8, top: CGFloat = 80) {
+        guard top <= middle && middle <= bottom else { fatalError("Top should be smaller than middle and middle should be smaller than bottom.") }
         self.currentPosition = currentPosition
         self.bottom = bottom
         self.middle = middle
